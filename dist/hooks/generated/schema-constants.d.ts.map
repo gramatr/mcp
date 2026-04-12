@@ -1,0 +1,1 @@
+{"version":3,"file":"schema-constants.d.ts","sourceRoot":"","sources":["../../../src/hooks/generated/schema-constants.ts"],"names":[],"mappings":"AAAA,eAAO,MAAM,YAAY,0kBAAsiB,CAAC;AAChkB,eAAO,MAAM,eAAe,aAAgC,CAAC;AAC7D,eAAO,MAAM,gBAAgB,EAAE,MAAM,CAAC,MAAM,EAAE,KAAK,CAAC;IAAE,KAAK,EAAE,MAAM,CAAC;IAAC,WAAW,CAAC,EAAE,SAAS,MAAM,EAAE,CAAA;CAAE,CAAC,CAYtG,CAAC"}
