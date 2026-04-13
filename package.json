@@ -1,0 +1,69 @@
+{
+  "name": "@gramatr/mcp",
+  "version": "0.7.10",
+  "description": "grāmatr — Intelligence middleware for AI agents. Pre-classifies every request, injects relevant memory and behavioral context, enforces data quality, and maintains session continuity across Claude, ChatGPT, Codex, Cursor, Gemini, and any MCP-compatible client.",
+  "license": "SEE LICENSE IN LICENSE",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gramatr/mcp.git"
+  },
+  "homepage": "https://gramatr.com",
+  "bugs": {
+    "url": "https://github.com/gramatr/mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "intelligence-layer",
+    "decision-routing",
+    "context-engineering",
+    "session-continuity",
+    "agent-memory",
+    "knowledge-graph",
+    "semantic-search",
+    "claude",
+    "chatgpt",
+    "codex",
+    "cursor",
+    "gemini",
+    "gramatr"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "type": "module",
+  "bin": {
+    "gramatr-mcp": "dist/bin/gramatr-mcp.js"
+  },
+  "main": "dist/server/server.js",
+  "exports": {
+    ".": "./dist/server/server.js",
+    "./bin": "./dist/bin/gramatr-mcp.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "deploy": "rm -rf $HOME/.gramatr/mcp/dist && mkdir -p $HOME/.gramatr/mcp && cp -r dist $HOME/.gramatr/mcp/dist && cp package.json $HOME/.gramatr/mcp/package.json && cd $HOME/.gramatr/mcp && npm install --production --no-package-lock --prefer-offline && echo 'Deployed @gramatr/mcp -> ~/.gramatr/mcp'",
+    "clean": "rm -rf dist",
+    "start": "node dist/bin/gramatr-mcp.js",
+    "dev": "tsx src/bin/gramatr-mcp.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "cp ../../LICENSE ./LICENSE 2>/dev/null || true"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "better-sqlite3": "^12.9.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}

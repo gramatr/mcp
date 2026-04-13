@@ -1,0 +1,118 @@
+/**
+ * @gramatr/mcp — config-runtime.ts
+ *
+ * Canonical env-access surface for `@gramatr/mcp`. All `process.env.*` reads
+ * in this package funnel through this module so hook code and bin entry
+ * points never touch `process.env` directly.
+ *
+ * This matches the per-package canonical-config-home convention encoded in
+ * `scripts/lint/check-process-env.ts` (rubric dimension C1). Each package
+ * owns its own `config*.ts` file as its canonical env-access home — this
+ * file is the mcp package's home.
+ *
+ * Design notes:
+ *   - Deliberately standalone. `@gramatr/mcp` ships as a lightweight
+ *     universal adapter, so it does NOT depend on `@gramatr/core/config`
+ *     (which pulls JWT, OIDC, Firebase, DB, Redis — way too heavy for a
+ *     hook subprocess that must cold-start in <250ms).
+ *   - Reads env vars on every call (no caching). Env is static for the
+ *     life of a process, but hook subprocesses are short-lived so caching
+ *     would be pointless complexity.
+ *   - Home directory resolution prefers POSIX `HOME` then Windows
+ *     `USERPROFILE`, matching the cross-platform contract the legacy
+ *     client hooks assumed.
+ */
+/**
+ * Gramatr auth token resolved from environment variables.
+ *
+ * Priority (first non-empty wins):
+ *   1. `GRAMATR_TOKEN` — canonical, current
+ *   2. `AIOS_MCP_TOKEN` — legacy alias from the pre-rebrand era, retained
+ *      for backwards compatibility with users who haven't rotated env vars
+ *
+ * Returns `null` if neither is set. Caller is responsible for falling back
+ * to config files (`~/.gramatr/settings.json`, `~/.gramatr.json`, etc).
+ */
+export function getGramatrTokenFromEnv() {
+    const current = process.env.GRAMATR_TOKEN;
+    if (current && current.length > 0)
+        return current;
+    const legacy = process.env.AIOS_MCP_TOKEN;
+    if (legacy && legacy.length > 0)
+        return legacy;
+    return null;
+}
+/**
+ * Override URL for the gramatr remote MCP server.
+ *
+ * Returns `null` if `GRAMATR_URL` is not set. Caller is responsible for
+ * falling back to config file values or a built-in default.
+ */
+export function getGramatrUrlFromEnv() {
+    const url = process.env.GRAMATR_URL;
+    return url && url.length > 0 ? url : null;
+}
+/**
+ * Override directory for gramatr config, logs, queue files, etc.
+ *
+ * Returns `null` if `GRAMATR_DIR` is not set. Caller typically joins this
+ * against `getHomeDir()` to build the default `~/.gramatr` path.
+ */
+export function getGramatrDirFromEnv() {
+    const dir = process.env.GRAMATR_DIR;
+    return dir && dir.length > 0 ? dir : null;
+}
+/**
+ * Cross-platform user home directory.
+ *
+ * Prefers POSIX `HOME`, falls back to Windows `USERPROFILE`. Returns an
+ * empty string if neither is set — callers should treat empty string as
+ * an error condition and handle it explicitly rather than blindly
+ * concatenating.
+ */
+export function getHomeDir() {
+    const home = process.env.HOME;
+    if (home && home.length > 0)
+        return home;
+    const userProfile = process.env.USERPROFILE;
+    if (userProfile && userProfile.length > 0)
+        return userProfile;
+    return '';
+}
+/**
+ * Hook/runtime timeout override in milliseconds.
+ *
+ * Falls back to the provided default when unset or invalid.
+ */
+export function getGramatrTimeoutFromEnv(defaultMs) {
+    const raw = process.env.GRAMATR_TIMEOUT;
+    if (!raw || raw.length === 0)
+        return defaultMs;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultMs;
+}
+/**
+ * Feature flag for prompt enrichment hooks.
+ *
+ * Returns false only when explicitly disabled with `GRAMATR_ENRICH=0`.
+ */
+export function isGramatrEnrichEnabledFromEnv() {
+    return process.env.GRAMATR_ENRICH !== '0';
+}
+/**
+ * Downstream model alias for Claude-family hook runtimes.
+ *
+ * Priority:
+ *   1. `ANTHROPIC_MODEL`
+ *   2. `CLAUDE_MODEL`
+ */
+export function getClaudeModelFromEnv() {
+    const anthropic = process.env.ANTHROPIC_MODEL;
+    if (anthropic && anthropic.length > 0)
+        return anthropic;
+    const claude = process.env.CLAUDE_MODEL;
+    if (claude && claude.length > 0)
+        return claude;
+    return null;
+}
+//# sourceMappingURL=config-runtime.js.map
