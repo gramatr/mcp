@@ -1,0 +1,85 @@
+Gramatr License v1.0
+
+Copyright (c) gramatr. All rights reserved.
+
+1. License grant
+
+Subject to the terms of this license, gramatr grants you a limited, revocable,
+non-exclusive, non-transferable, non-sublicensable license to install and use
+the gramatr client software solely as a client for authorized gramatr services.
+
+2. Permitted use
+
+You may:
+- install and use the client software for personal or internal business use;
+- connect the software to gramatr-hosted services or other gramatr-authorized
+  service endpoints;
+- make copies only as necessary for backup, installation, and normal use.
+
+3. Restrictions
+
+You may not:
+- sell, sublicense, rent, lease, distribute, publish, or otherwise make the
+  software available to third parties as a standalone product;
+- modify, create derivative works of, reverse engineer, decompile, or
+  disassemble the software, except to the limited extent such restriction is
+  prohibited by applicable law;
+- use the software to access or operate an unauthorized competing hosted
+  service based on gramatr technology;
+- remove or alter any proprietary notices, trademarks, or attribution;
+- use the software in violation of applicable law or the gramatr service terms.
+
+4. Server and service components
+
+The server-side components of this repository (including but not limited to the
+intelligence layer, persistence layer, gateway, and MCP server) are proprietary
+and confidential. No license is granted for hosting, deploying, or operating the
+server components outside of gramatr-authorized infrastructure.
+
+5. Service dependency
+
+The client software is intended to be used with authenticated gramatr backend
+services. Access to those services may require an account, API key, accepted
+terms, and an active subscription or other authorization. gramatr may change,
+suspend, or discontinue service access in accordance with applicable service
+terms.
+
+6. Ownership
+
+The software is licensed, not sold. gramatr and its licensors retain all
+right, title, and interest in and to the software, including all intellectual
+property rights.
+
+7. Updates
+
+gramatr may provide updates, patches, or new versions under this same license
+or under updated license terms. Continued use of an updated version constitutes
+acceptance of the updated terms if they are presented to you.
+
+8. Termination
+
+This license terminates automatically if you violate these terms. Upon
+termination, you must stop using the software and delete all copies in your
+possession or control.
+
+9. Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTIES OF ANY
+KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY, INCLUDING IMPLIED WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT,
+TO THE MAXIMUM EXTENT PERMITTED BY LAW.
+
+10. Limitation of liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, GRAMATR WILL NOT BE LIABLE FOR ANY
+INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES,
+OR FOR ANY LOSS OF DATA, REVENUE, PROFITS, GOODWILL, OR BUSINESS INTERRUPTION,
+ARISING OUT OF OR RELATED TO THE SOFTWARE OR ITS USE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
+
+11. Governing terms
+
+Use of the gramatr backend service is governed separately by gramatr Terms of
+Service and Privacy Policy. If there is a conflict between this license and the
+service terms with respect to backend service use, the service terms control
+for backend access and service behavior.
