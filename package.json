@@ -1,0 +1,79 @@
+{
+  "name": "@gramatr/mcp",
+  "version": "0.10.2",
+  "description": "grāmatr — Intelligence middleware for AI agents. Pre-classifies every request, injects relevant memory and behavioral context, enforces data quality, and maintains session continuity across Claude, ChatGPT, Codex, Cursor, Gemini, and any MCP-compatible client.",
+  "license": "SEE LICENSE IN LICENSE",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gramatr/mcp.git"
+  },
+  "homepage": "https://gramatr.com",
+  "bugs": {
+    "url": "https://github.com/gramatr/mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "intelligence-layer",
+    "decision-routing",
+    "context-engineering",
+    "session-continuity",
+    "agent-memory",
+    "knowledge-graph",
+    "semantic-search",
+    "claude",
+    "chatgpt",
+    "codex",
+    "cursor",
+    "gemini",
+    "gramatr"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module",
+  "bin": {
+    "gramatr-mcp": "dist/bin/gramatr-mcp.js"
+  },
+  "main": "dist/server/server.js",
+  "exports": {
+    ".": "./dist/server/server.js",
+    "./bin": "./dist/bin/gramatr-mcp.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map",
+    "dist/**/*.js.map",
+    "scripts/postinstall.mjs",
+    "LICENSE"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.mjs",
+    "build": "tsc --build && node ./scripts/build-binary.mjs",
+    "build:types": "tsc --build",
+    "build:binary": "bun build --compile src/bin/gramatr-mcp.ts --define __GRAMATR_VERSION__=\\\"${npm_package_version}\\\" --outfile dist/gramatr",
+    "deploy": "mkdir -p $HOME/.gramatr/bin && cp dist/gramatr $HOME/.gramatr/bin/gramatr && chmod +x $HOME/.gramatr/bin/gramatr && echo 'Deployed @gramatr/mcp -> ~/.gramatr/bin/gramatr'",
+    "clean": "rm -rf dist",
+    "start": "$HOME/.gramatr/bin/gramatr",
+    "dev": "bun run src/bin/gramatr-mcp.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "cp ../../LICENSE ./LICENSE 2>/dev/null || true"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "ajv": "^8.18.0",
+    "better-sqlite3": "^12.9.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.9.0",
+    "bun-types": "^1.3.12",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
