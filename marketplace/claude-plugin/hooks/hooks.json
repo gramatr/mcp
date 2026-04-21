@@ -1,0 +1,192 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook git-gate --claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook input-validator --claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook input-validator --claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook edit-tracker --claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook input-validator --claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook edit-tracker --claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook input-validator --claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*gramatr.*__",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook input-validator --claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook agent-gate --claude-code"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook agent-verify --claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*gramatr.*__",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook tool-tracker --claude-code"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook rating-capture --claude-code"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook user-prompt-submit --claude-code"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook session-start --claude-code",
+            "statusMessage": "Loading gramatr session context"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook session-end --claude-code",
+            "statusMessage": "Saving gramatr session"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook stop --claude-code",
+            "statusMessage": "Submitting gramatr classification feedback"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook subagent-route --claude-code",
+            "statusMessage": "Routing sub-agent through grāmatr intelligence"
+          }
+        ]
+      }
+    ],
+    "TaskCreated": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook task-quality-gate --claude-code",
+            "statusMessage": "Verifying Quality Gate criteria"
+          }
+        ]
+      }
+    ],
+    "InstructionsLoaded": [
+      {
+        "matcher": "CLAUDE.md",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook instructions-loaded --claude-code",
+            "statusMessage": "Loading grāmatr project context"
+          }
+        ]
+      }
+    ]
+  }
+}

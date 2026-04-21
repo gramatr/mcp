@@ -1,0 +1,1 @@
+{"version":3,"file":"git-gate.d.ts","sourceRoot":"","sources":["../../src/hooks/git-gate.ts"],"names":[],"mappings":"AAAA;;;;;;;;;GASG;AAkDH;;;GAGG;AACH,wBAAgB,eAAe,CAAC,OAAO,EAAE,MAAM,EAAE,GAAG,CAAC,EAAE,MAAM,GAAG;IAAE,KAAK,EAAE,OAAO,CAAC;IAAC,MAAM,CAAC,EAAE,MAAM,CAAA;CAAE,CA+ClG;AAID,wBAAsB,cAAc,CAAC,KAAK,GAAE,MAAM,EAAO,GAAG,OAAO,CAAC,MAAM,CAAC,CAyB1E"}
