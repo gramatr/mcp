@@ -1,0 +1,20 @@
+{
+  "name": "gramatr",
+  "version": "0.11.14",
+  "description": "grāmatr — Real-Time Intelligent Context Engineering",
+  "author": {
+    "name": "gramatr",
+    "email": "support@gramatr.com",
+    "url": "https://gramatr.com"
+  },
+  "homepage": "https://gramatr.com",
+  "repository": "https://github.com/gramatr/mcp",
+  "license": "MIT",
+  "keywords": [
+    "intelligence",
+    "memory",
+    "routing",
+    "context",
+    "mcp"
+  ]
+}
