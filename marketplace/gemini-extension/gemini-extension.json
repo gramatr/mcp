@@ -1,0 +1,66 @@
+{
+  "name": "gramatr",
+  "version": "0.12.8",
+  "description": "grāmatr intelligence layer for Gemini CLI — persistent memory, effort classification, and behavioral routing via local MCP runtime.",
+  "mcpServers": {
+    "gramatr": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@gramatr/mcp@0.12.8"
+      ],
+      "env": {
+        "GRAMATR_DIR": "~/.gramatr"
+      },
+      "timeout": 30000
+    }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook session-start --gemini",
+            "name": "gramatr-session-start",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "BeforeAgent": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook user-prompt-submit --gemini",
+            "name": "gramatr-prompt-routing",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook session-end --gemini",
+            "name": "gramatr-session-save",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook stop --gemini",
+            "name": "gramatr-session-feedback",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
