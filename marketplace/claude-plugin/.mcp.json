@@ -1,0 +1,9 @@
+{
+  "gramatr": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@gramatr/mcp@0.12.28"
+    ]
+  }
+}
