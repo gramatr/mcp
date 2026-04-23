@@ -1,0 +1,80 @@
+{
+  "name": "@gramatr/mcp",
+  "version": "0.12.16",
+  "description": "grāmatr — Intelligence middleware for AI agents. Pre-classifies every request, injects relevant memory and behavioral context, enforces data quality, and maintains session continuity across Claude, ChatGPT, Codex, Cursor, Gemini, and any MCP-compatible client.",
+  "license": "SEE LICENSE IN LICENSE",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gramatr/mcp.git"
+  },
+  "homepage": "https://gramatr.com",
+  "bugs": {
+    "url": "https://github.com/gramatr/mcp/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "intelligence-layer",
+    "decision-routing",
+    "context-engineering",
+    "session-continuity",
+    "agent-memory",
+    "knowledge-graph",
+    "semantic-search",
+    "claude",
+    "chatgpt",
+    "codex",
+    "cursor",
+    "gemini",
+    "gramatr"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module",
+  "bin": {
+    "gramatr-mcp": "dist/bin/gramatr-mcp.js"
+  },
+  "main": "dist/server/server.js",
+  "exports": {
+    ".": "./dist/server/server.js",
+    "./bin": "./dist/bin/gramatr-mcp.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map",
+    "dist/**/*.js.map",
+    "scripts/postinstall.mjs",
+    "LICENSE"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.mjs",
+    "build": "tsc --build && node ./scripts/build-marketplace.mjs",
+    "build:binary": "node ./scripts/build-binary.mjs",
+    "build:marketplace": "node ./scripts/build-marketplace.mjs",
+    "build:types": "tsc --build",
+    "clean": "rm -rf dist",
+    "start": "node dist/bin/gramatr-mcp.js",
+    "dev": "node --import tsx/esm src/bin/gramatr-mcp.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:orchestration": "docker build -f test/smoke/Dockerfile.orchestration -t gramatr-orch-smoke ../../../ && docker run --rm gramatr-orch-smoke",
+    "test:orchestration:setup": "rm -f gramatr-mcp-*.tgz && npm pack --pack-destination . && mv gramatr-mcp-*.tgz gramatr-mcp.tgz && docker build -f test/smoke/Dockerfile.orchestration-functional -t gramatr-orch-functional ../../../ && rm -f gramatr-mcp.tgz && docker volume create orch-claude-auth && docker volume create orch-gramatr-state && docker run -it --rm -v orch-claude-auth:/home/gramatr/.claude -v orch-gramatr-state:/home/gramatr/.gramatr gramatr-orch-functional ./orch-setup.sh",
+    "test:orchestration:functional": "rm -f gramatr-mcp-*.tgz && npm pack --pack-destination . && mv gramatr-mcp-*.tgz gramatr-mcp.tgz && docker build -f test/smoke/Dockerfile.orchestration-functional -t gramatr-orch-functional ../../../ && rm -f gramatr-mcp.tgz && docker run --rm -v orch-claude-auth:/home/gramatr/.claude -v orch-gramatr-state:/home/gramatr/.gramatr gramatr-orch-functional ./orch-test.sh",
+    "test:orchestration:shell": "rm -f gramatr-mcp-*.tgz && npm pack --pack-destination . && mv gramatr-mcp-*.tgz gramatr-mcp.tgz && docker build -f test/smoke/Dockerfile.orchestration-functional -t gramatr-orch-functional ../../../ && rm -f gramatr-mcp.tgz && docker run -it --rm -v orch-claude-auth:/home/gramatr/.claude -v orch-gramatr-state:/home/gramatr/.gramatr gramatr-orch-functional bash",
+    "prepublishOnly": "cp ../../LICENSE ./LICENSE 2>/dev/null || true"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "ajv": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
