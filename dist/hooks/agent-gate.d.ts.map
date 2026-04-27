@@ -1,0 +1,1 @@
+{"version":3,"file":"agent-gate.d.ts","sourceRoot":"","sources":["../../src/hooks/agent-gate.ts"],"names":[],"mappings":"AAAA;;;;;;;GAOG;AA8DH,wBAAgB,4BAA4B,CAAC,SAAS,EAAE,MAAM,EAAE,KAAK,GAAE,MAAmB,GAAG;IAAE,KAAK,EAAE,OAAO,CAAC;IAAC,MAAM,CAAC,EAAE,MAAM,CAAA;CAAE,CA4B/H;AAID,wBAAsB,gBAAgB,CAAC,KAAK,GAAE,MAAM,EAAO,GAAG,OAAO,CAAC,MAAM,CAAC,CA6B5E"}
