@@ -1,0 +1,1 @@
+{"version":3,"file":"tool-envelope.d.ts","sourceRoot":"","sources":["../../../src/hooks/lib/tool-envelope.ts"],"names":[],"mappings":"AAAA,KAAK,cAAc,GAAG;IACpB,OAAO,CAAC,EAAE,KAAK,CAAC;QAAE,IAAI,EAAE,MAAM,CAAC;QAAC,IAAI,EAAE,MAAM,CAAA;KAAE,CAAC,CAAC;CACjD,CAAC;AAQF,wBAAgB,kBAAkB,CAAC,CAAC,EAAE,GAAG,EAAE,cAAc,GAAG,IAAI,GAAG,SAAS,GAAG,CAAC,GAAG,IAAI,CAwBtF"}
