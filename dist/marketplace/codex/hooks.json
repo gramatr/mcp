@@ -1,0 +1,50 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook session-start --codex",
+            "statusMessage": "Loading gramatr session context",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook user-prompt-submit --codex",
+            "statusMessage": "Routing request through gramatr",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook session-end --codex",
+            "statusMessage": "Saving gramatr session state",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook stop --codex",
+            "statusMessage": "Submitting gramatr classification feedback",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
