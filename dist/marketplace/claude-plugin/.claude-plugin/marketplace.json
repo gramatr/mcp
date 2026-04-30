@@ -1,0 +1,15 @@
+{
+  "name": "gramatr",
+  "description": "grāmatr — Real-Time Intelligent Context Engineering",
+  "author": {
+    "name": "gramatr",
+    "email": "support@gramatr.com",
+    "url": "https://gramatr.com"
+  },
+  "plugins": [
+    {
+      "name": "gramatr",
+      "path": "gramatr"
+    }
+  ]
+}
