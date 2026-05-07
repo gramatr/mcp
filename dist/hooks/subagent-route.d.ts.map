@@ -1,0 +1,1 @@
+{"version":3,"file":"subagent-route.d.ts","sourceRoot":"","sources":["../../src/hooks/subagent-route.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;;GAeG;AAmEH,wBAAgB,oCAAoC,CAClD,SAAS,EAAE,MAAM,EACjB,KAAK,GAAE,MAAmB,GACzB;IAAE,KAAK,EAAE,OAAO,CAAC;IAAC,MAAM,CAAC,EAAE,MAAM,CAAA;CAAE,CAUrC;AAID,wBAAsB,oBAAoB,CAAC,KAAK,GAAE,MAAM,EAAO,GAAG,OAAO,CAAC,MAAM,CAAC,CA8BhF"}
