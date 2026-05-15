@@ -1,0 +1,76 @@
+{
+  "name": "gramatr",
+  "display_name": "grāmatr",
+  "version": "0.20.7",
+  "description": "Your memory, preferences, and projects — carried across every AI tool you use.",
+  "tagline": "Your memory and context — carried across every AI tool you use.",
+  "long_description": "grāmatr℠ is the context engineering platform that follows you between AI tools. Start a project in Claude today, pick it up in ChatGPT tomorrow, finish it in Cursor next week — your preferences, decisions, and history come with you. Every prompt is pre-classified so the assistant skips routing overhead and starts working immediately. The more you use it, the better it knows you.",
+  "featured_use_cases": [
+    "Resume yesterday's project from any AI tool, on any device",
+    "Save your preferences once — every assistant respects them",
+    "Pre-classified prompts mean faster, cheaper answers",
+    "Quality checks and structured execution baked into every task",
+    "One memory across Claude, ChatGPT, Cursor, Codex, Gemini, and VS Code"
+  ],
+  "mcpServers": {
+    "gramatr": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@gramatr/mcp@0.20.7"
+      ],
+      "env": {
+        "GRAMATR_DIR": "~/.gramatr"
+      },
+      "timeout": 30000
+    }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook session-start --gemini",
+            "name": "gramatr-session-start",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "BeforeAgent": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook user-prompt-submit --gemini",
+            "name": "gramatr-prompt-routing",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook session-end --gemini",
+            "name": "gramatr-session-save",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx -y @gramatr/mcp hook stop --gemini",
+            "name": "gramatr-session-feedback",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
