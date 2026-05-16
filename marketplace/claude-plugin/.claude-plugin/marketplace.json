@@ -1,0 +1,29 @@
+{
+  "name": "gramatr",
+  "display_name": "gramatr",
+  "description": "Your memory, preferences, and projects — carried across every AI tool you use.",
+  "tagline": "Your memory and context — carried across every AI tool you use.",
+  "long_description": "grāmatr℠ is the context engineering platform that follows you between AI tools. Start a project in Claude today, pick it up in ChatGPT tomorrow, finish it in Cursor next week — your preferences, decisions, and history come with you. Every prompt is pre-classified so the assistant skips routing overhead and starts working immediately. The more you use it, the better it knows you.",
+  "featured_use_cases": [
+    "Resume yesterday's project from any AI tool, on any device",
+    "Save your preferences once — every assistant respects them",
+    "Pre-classified prompts mean faster, cheaper answers",
+    "Quality checks and structured execution baked into every task",
+    "One memory across Claude, ChatGPT, Cursor, Codex, Gemini, and VS Code"
+  ],
+  "owner": {
+    "name": "gramatr",
+    "email": "support@gramatr.com",
+    "url": "https://gramatr.com"
+  },
+  "plugins": [
+    {
+      "name": "gramatr",
+      "source": {
+        "source": "github",
+        "repo": "gramatr/mcp",
+        "ref": "release"
+      }
+    }
+  ]
+}
