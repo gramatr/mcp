@@ -1,0 +1,44 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "gramatr",
+            "tool": "route_request",
+            "input": {
+              "prompt": "${prompt}",
+              "hook_response": true
+            }
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "gramatr",
+            "tool": "save_handoff"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "gramatr",
+            "tool": "classification_feedback"
+          }
+        ]
+      }
+    ]
+  }
+}

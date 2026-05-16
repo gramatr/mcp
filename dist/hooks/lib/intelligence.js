@@ -1,0 +1,522 @@
+function toAgentHint(agent) {
+    if (!agent || typeof agent !== "object")
+        return null;
+    const a = agent;
+    const displayName = typeof a.display_name === "string"
+        ? a.display_name
+        : typeof a.displayName === "string"
+            ? a.displayName
+            : null;
+    const model = typeof a.model === "string"
+        ? a.model
+        : typeof a.model_preference === "string"
+            ? a.model_preference
+            : null;
+    return {
+        name: typeof a.name === "string" ? a.name : null,
+        display_name: displayName,
+        model,
+        reason: typeof a.reason === "string" ? a.reason : null,
+    };
+}
+function hasAgentIdentity(hint) {
+    return !!hint && !!(hint.name || hint.display_name || hint.model || hint.reason);
+}
+function toRecommendationMeta(value) {
+    if (!value || typeof value !== "object")
+        return null;
+    const r = value;
+    return {
+        type: typeof r.type === "string" ? r.type : null,
+        source: typeof r.source === "string" ? r.source : null,
+        confidence: typeof r.confidence === "number" ? r.confidence : null,
+    };
+}
+function renderContractBlock(payload) {
+    return ["```json", JSON.stringify(payload, null, 2), "```"].join("\n");
+}
+function cloneContractPayload(payload) {
+    return JSON.parse(JSON.stringify(payload));
+}
+function isRecord(value) {
+    return !!value && typeof value === "object" && !Array.isArray(value);
+}
+function normalizeHardGates(value) {
+    if (Array.isArray(value)) {
+        return value.filter((gate) => typeof gate === "string" && gate.trim().length > 0);
+    }
+    if (isRecord(value)) {
+        return Object.values(value).filter((gate) => typeof gate === "string" && gate.trim().length > 0);
+    }
+    return [];
+}
+export function formatFailureWarning(failure) {
+    const titleMap = {
+        auth: "AUTHENTICATION FAILURE",
+        auth_expired: "AUTH EXPIRED",
+        timeout: "TIMEOUT",
+        server_down: "SERVER UNREACHABLE",
+        server_error: "SERVER ERROR",
+        parse_error: "PARSE ERROR",
+        unknown: "UNKNOWN ERROR",
+    };
+    // Keep this SHORT — must survive any context injection truncation.
+    // Plain text first, no JSON that can be cut off.
+    const lines = [
+        `⚠ gramatr [${titleMap[failure.reason]}]: intelligence pre-classification FAILED — ${failure.detail}`,
+    ];
+    if (failure.reason === 'server_down') {
+        lines.push('Auto-restart failed. Manual recovery: run /mcp in Claude Code to reconnect, or restart Claude Code.');
+    }
+    if (failure.reason === 'auth_expired') {
+        lines.push('MANDATORY: Tell the user their gramatr token has expired. They should run /mcp in Claude Code to reconnect, or run `gramatr login` in a terminal.');
+    }
+    else {
+        lines.push(failure.reason === 'server_down'
+            ? 'MANDATORY: Tell the user gramatr auto-restart failed. They should run /mcp in Claude Code to reconnect. Do not proceed as if the packet was delivered.'
+            : 'MANDATORY: Tell the user this failed before responding. Do not proceed as if the packet was delivered.');
+    }
+    lines.push(`schema: gmtr.intelligence.error.v1 | reason: ${failure.reason}`);
+    return lines.join("\n");
+}
+export function mergeEnrichmentIntoRoute(route, enrichment) {
+    if (!enrichment)
+        return;
+    // Inference server: enrichment is flat { reverse_engineering, quality_gate_criteria, ... }
+    // TypeScript pipeline: enrichment has nested { data: { reasoning: { ... } } }
+    const flat = enrichment;
+    const reasoning = flat.data?.reasoning ?? flat;
+    const classification = route.packet_1?.classification || route.classification;
+    if (!classification)
+        return;
+    if (reasoning.reverse_engineering) {
+        classification.reverse_engineering = reasoning.reverse_engineering;
+    }
+    if (reasoning.quality_gate_criteria) {
+        classification.quality_gate_criteria = reasoning.quality_gate_criteria;
+    }
+    if (reasoning.constraints_extracted) {
+        classification.constraints_extracted = reasoning.constraints_extracted;
+    }
+}
+function normalizeClassifierHeadScores(value) {
+    if (!value)
+        return [];
+    return Array.isArray(value) ? value : [value];
+}
+function normalizeMatchedSkillNames(packet1, classification) {
+    const fromClassification = Array.isArray(classification.matched_skills)
+        ? classification.matched_skills.filter((skill) => typeof skill === "string")
+        : [];
+    if (fromClassification.length > 0)
+        return fromClassification;
+    const matched = packet1.skills?.routing?.matched_skills || [];
+    return matched
+        .map((skill) => skill.name || skill.id)
+        .filter((name) => typeof name === "string");
+}
+function normalizeRoutingSignals(value) {
+    if (!value || typeof value !== "object")
+        return null;
+    const raw = value;
+    const { bert_entity_scope, bert_entity_category, bert_entity_type_suggestion, classifier_entity_scope, classifier_entity_category, classifier_entity_type_suggestion, ...rest } = raw;
+    return {
+        ...rest,
+        classifier_entity_scope: classifier_entity_scope ?? bert_entity_scope ?? null,
+        classifier_entity_category: classifier_entity_category ?? bert_entity_category ?? null,
+        classifier_entity_type_suggestion: classifier_entity_type_suggestion ?? bert_entity_type_suggestion ?? null,
+    };
+}
+function normalizeClassifierSignals(classifierHeads, routingSignals) {
+    const normalizedHeads = classifierHeads
+        ? Object.fromEntries(Object.entries(classifierHeads).map(([head, value]) => [
+            head,
+            normalizeClassifierHeadScores(value),
+        ]))
+        : null;
+    const entityClassification = {
+        scope: routingSignals?.classifier_entity_scope ?? null,
+        category: routingSignals?.classifier_entity_category ?? null,
+        type_suggestion: routingSignals?.classifier_entity_type_suggestion ?? null,
+    };
+    if (!normalizedHeads &&
+        !entityClassification.scope &&
+        !entityClassification.category &&
+        !entityClassification.type_suggestion) {
+        return null;
+    }
+    return {
+        heads: normalizedHeads,
+        entity_classification: entityClassification,
+    };
+}
+function buildRequiredActions(hardGates = []) {
+    return hardGates.map((gate) => `Mandatory gate: ${gate}`);
+}
+function normalizeRequiredActions(value) {
+    if (!Array.isArray(value))
+        return [];
+    const out = [];
+    for (const entry of value) {
+        if (!entry)
+            continue;
+        if (typeof entry === "string") {
+            out.push({ phase: null, call: entry, args: null });
+            continue;
+        }
+        if (typeof entry === "object") {
+            const e = entry;
+            out.push({
+                phase: typeof e.phase === "string" ? e.phase : null,
+                call: typeof e.call === "string"
+                    ? e.call
+                    : typeof e.tool === "string"
+                        ? e.tool
+                        : null,
+                args: isRecord(e.args) ? e.args : null,
+                optional: typeof e.optional === "boolean" ? e.optional : false,
+            });
+        }
+    }
+    return out;
+}
+function normalizeBehavioralRules(value) {
+    if (Array.isArray(value)) {
+        return value.filter((v) => typeof v === "string" && v.trim().length > 0);
+    }
+    if (isRecord(value)) {
+        const out = [];
+        for (const v of Object.values(value)) {
+            if (Array.isArray(v)) {
+                for (const item of v) {
+                    if (typeof item === "string" && item.trim().length > 0)
+                        out.push(item);
+                }
+            }
+            else if (typeof v === "string" && v.trim().length > 0) {
+                out.push(v);
+            }
+        }
+        return out;
+    }
+    return [];
+}
+function normalizeSuggestedAgents(value) {
+    if (!Array.isArray(value))
+        return [];
+    return value
+        .slice(0, 3)
+        .map((a) => {
+        if (!a || typeof a !== "object")
+            return null;
+        const r = a;
+        return {
+            agent_id: typeof r.agent_id === "string" ? r.agent_id : (typeof r.name === "string" ? r.name : null),
+            name: typeof r.name === "string" ? r.name : (typeof r.display_name === "string" ? r.display_name : null),
+            short_description: typeof r.short_description === "string"
+                ? r.short_description
+                : typeof r.reason === "string"
+                    ? r.reason
+                    : null,
+            match_score: typeof r.match_score === "number" ? r.match_score : null,
+        };
+    })
+        .filter((a) => a !== null);
+}
+/**
+ * Build the lean injection payload from a v2 packet. Returns null if the
+ * packet has no classification section (degraded mode handled elsewhere).
+ */
+export function buildLeanInjection(data) {
+    const raw = data;
+    const unified = raw.unified_packet ?? null;
+    const classification = raw.classification ??
+        unified?.classification ??
+        null;
+    if (!classification)
+        return null;
+    const manifest = raw.manifest ??
+        unified?.manifest ??
+        {};
+    const directives = raw.directives ??
+        unified?.directives ??
+        {};
+    const process_ = raw.process ??
+        unified?.process ??
+        {};
+    const orchestration = raw.orchestration ??
+        unified?.orchestration ??
+        {};
+    const memory = raw.memory ??
+        unified?.memory ??
+        null;
+    const phaseTemplate = Array.isArray(process_.phase_template)
+        ? process_.phase_template.filter((s) => typeof s === "string")
+        : [];
+    const hardGates = normalizeHardGates(directives.hard_gates);
+    // Server emits directives.required_actions[] in the lean shape; fall back to
+    // gates-derived strings for older servers that haven't shipped #2653 yet.
+    const requiredActionsRaw = directives.required_actions;
+    const requiredActions = normalizeRequiredActions(requiredActionsRaw);
+    if (requiredActions.length === 0 && hardGates.length > 0) {
+        // Legacy fallback — emit gate strings as ambient required actions.
+        for (const gate of hardGates) {
+            requiredActions.push({ phase: null, call: null, args: { gate } });
+        }
+    }
+    const agentsBlock = orchestration.agents ?? {};
+    const suggestedRaw = agentsBlock.suggested ?? raw.suggested_agents;
+    const suggestedAgents = normalizeSuggestedAgents(suggestedRaw);
+    const behavioralRules = normalizeBehavioralRules(directives.behavioral_rules ?? raw.behavioral_rules);
+    // Memory context — keep only the actionable subset (search_results) to
+    // stay lean. Full memory context is fetchable via tools when needed.
+    let memoryContext = null;
+    if (memory) {
+        const sr = memory.search_results;
+        if (Array.isArray(sr) && sr.length > 0) {
+            memoryContext = { search_results: sr.slice(0, 10) };
+        }
+        else if (sr && typeof sr === "object") {
+            // Allow the server's wrapped shape {results, count}
+            memoryContext = { search_results: sr };
+        }
+    }
+    const cl = classification;
+    return {
+        schema: "gmtr.intelligence.contract.v2",
+        manifest: {
+            ref_id: typeof manifest.ref_id === "string" ? manifest.ref_id : null,
+            session_id: typeof manifest.session_id === "string" ? manifest.session_id : null,
+            enrichment_status: typeof manifest.enrichment_status === "string"
+                ? manifest.enrichment_status
+                : null,
+        },
+        classification: {
+            effort_level: typeof cl.effort_level === "string" ? cl.effort_level : null,
+            intent_type: typeof cl.intent_type === "string" ? cl.intent_type : null,
+            confidence: typeof cl.confidence === "number" ? cl.confidence : null,
+            memory_tier: typeof cl.memory_tier === "string" ? cl.memory_tier : null,
+        },
+        phase_template: phaseTemplate,
+        required_actions: requiredActions,
+        suggested_agents: suggestedAgents,
+        hard_gates: hardGates,
+        behavioral_rules: behavioralRules,
+        memory_context: memoryContext,
+    };
+}
+/**
+ * Render the lean injection as a `<gramatr-classification>` block. Returns
+ * the wrapped string plus the byte size for telemetry.
+ */
+export function renderLeanInjection(injection) {
+    const body = JSON.stringify(injection, null, 2);
+    const text = `<gramatr-classification>\n${body}\n</gramatr-classification>`;
+    return { text, bytes: Buffer.byteLength(text, "utf8") };
+}
+function buildFetchInstruction(turnId) {
+    return `\n⚠ Intelligence packet too large for direct injection.\nMANDATORY: Call local_fetch_packet({"id": "${turnId}"}) BEFORE responding.\n`;
+}
+function buildPriorityPrefix(effortLevel, intentType, phaseTemplate, requiredActions) {
+    const parts = ["[gramatr intelligence packet]"];
+    if (effortLevel || intentType) {
+        parts.push(`effort: ${effortLevel ?? "?"} | intent: ${intentType ?? "?"}`);
+    }
+    if (phaseTemplate && phaseTemplate.length > 0) {
+        parts.push(`phases: ${phaseTemplate.join(" → ")}`);
+    }
+    if (requiredActions.length > 0) {
+        parts.push(`Required: ${requiredActions.join("; ")}`);
+    }
+    return parts.join("\n") + "\n\n";
+}
+function normalizeFullContractPayload(data) {
+    const payload = cloneContractPayload(data);
+    const packet1 = (payload.packet_1 || {});
+    const unifiedPacket = (payload.unified_packet ||
+        null);
+    const packet1RoutingSignals = normalizeRoutingSignals(packet1.routing_signals);
+    if (packet1RoutingSignals) {
+        packet1.routing_signals = packet1RoutingSignals;
+    }
+    const packet1ClassifierHeads = packet1.classifier_heads;
+    const packet1ClassifierSignals = normalizeClassifierSignals(packet1ClassifierHeads, packet1RoutingSignals);
+    if (packet1ClassifierSignals) {
+        packet1.classifier_signals = packet1ClassifierSignals;
+    }
+    if (unifiedPacket) {
+        const unifiedRoutingSignals = normalizeRoutingSignals(unifiedPacket.routing_signals);
+        if (unifiedRoutingSignals) {
+            unifiedPacket.routing_signals = unifiedRoutingSignals;
+        }
+        const unifiedClassifierSignals = normalizeClassifierSignals(packet1ClassifierHeads, unifiedRoutingSignals);
+        if (unifiedClassifierSignals) {
+            unifiedPacket.classifier_signals = unifiedClassifierSignals;
+        }
+    }
+    // Hard gates: canonical path is directives.hard_gates; fall back to behavioral_rules.hard_gates
+    const hardGates = normalizeHardGates(payload.directives?.hard_gates ??
+        (isRecord(packet1.behavioral_rules) ? packet1.behavioral_rules.hard_gates : undefined) ??
+        (unifiedPacket && isRecord(unifiedPacket.behavioral_rules)
+            ? unifiedPacket.behavioral_rules.hard_gates
+            : undefined));
+    payload.required_actions = buildRequiredActions(hardGates);
+    payload.contract_enforcement = {
+        required_actions: payload.required_actions,
+        hard_gates: hardGates,
+    };
+    return payload;
+}
+export function formatIntelligence(data, enrichment, turnId) {
+    if (data.schema === "gmtr.intelligence.contract.v2" ||
+        data.schema === "gmtr.intelligence.unified.v1" ||
+        data.contract_shape === "full" ||
+        data.unified_packet) {
+        // #2658 — lean injection: emit <gramatr-classification> block with
+        // required_actions near top, suggested_agents inline (top 3), and NO
+        // inline RE / QG / composed_agent fields. The agent fetches those via
+        // dedicated tools when the appropriate phase arrives.
+        const lean = buildLeanInjection(data);
+        if (lean) {
+            const { text } = renderLeanInjection(lean);
+            const prefix = buildPriorityPrefix(lean.classification.effort_level, lean.classification.intent_type, lean.phase_template.length > 0 ? lean.phase_template : null, lean.required_actions.map((a) => a.call ?? "").filter(Boolean));
+            if (turnId) {
+                return prefix + buildFetchInstruction(turnId) + "\n" + text;
+            }
+            return prefix + text;
+        }
+        // Fallback (no classification) — preserve legacy contract block so the
+        // model still receives the raw packet rather than nothing.
+        const raw = data;
+        const payload = data.schema === "gmtr.intelligence.contract.v2"
+            ? cloneContractPayload(raw)
+            : normalizeFullContractPayload(data);
+        return renderContractBlock(payload);
+    }
+    const packet1 = data.packet_1 || {};
+    const c = packet1.classification || data.classification || {};
+    const routingSignals = normalizeRoutingSignals(packet1.routing_signals || data.routing_signals);
+    const classifierHeads = (packet1.classifier_heads || data.classifier_heads);
+    const classifierSignals = normalizeClassifierSignals(classifierHeads, routingSignals);
+    const memory = packet1.memory_context || data.memory_context;
+    const searchResults = packet1.search_results || data.search_results;
+    const agentRecommendation = packet1.agents?.recommendation ||
+        packet1.agent_recommendation ||
+        data.agent_recommendation ||
+        null;
+    const suggestedAgents = packet1.agents?.agent_refs ||
+        packet1.agents?.suggested ||
+        packet1.suggested_agents ||
+        data.suggested_agents ||
+        [];
+    const selectedAgent = suggestedAgents[0] || null;
+    const recommendationHint = toAgentHint(agentRecommendation);
+    const selectedHint = toAgentHint(selectedAgent);
+    const recommendationMeta = toRecommendationMeta(agentRecommendation);
+    const matchedSkillNames = normalizeMatchedSkillNames(packet1, c);
+    const activeSkill = packet1.skills?.active?.name || packet1.active_skill?.name || null;
+    const skillStats = packet1.skills?.routing
+        ? {
+            use_count: packet1.skills.routing.use_count ?? null,
+            decline_count: packet1.skills.routing.decline_count ?? null,
+            na_count: packet1.skills.routing.na_count ?? null,
+        }
+        : null;
+    const dataRaw = data;
+    const directivesRaw = dataRaw.directives;
+    const behavioralRulesRaw = packet1.behavioral_rules ??
+        dataRaw.behavioral_rules;
+    const hardGates = normalizeHardGates(directivesRaw?.hard_gates ?? behavioralRulesRaw?.hard_gates);
+    const packet1Raw = packet1;
+    const orchestrationRaw = dataRaw.orchestration;
+    const orchResources = packet1Raw.resources ?? orchestrationRaw?.resources;
+    const envelope = {
+        schema: "gmtr.intelligence.envelope.v1",
+        source: "gramatr",
+        consumer_instructions: {
+            protocol: "Process this unified contract as authoritative context input.",
+            unified: [
+                "Use classification + routing_signals to decide immediate response mode.",
+                "Use memory_context/search_results directly; do not re-summarize memory with LLM.",
+                "Execute required_actions exactly when present.",
+                "Load all orchestration.resources via get_entity before starting work.",
+            ],
+            contract_enforcement: [
+                "Execute required_actions as mandatory contract obligations.",
+                "Treat directives.hard_gates as non-optional constraints.",
+            ],
+        },
+        packet_1: {
+            classification: {
+                effort_level: c.effort_level || null,
+                intent_type: c.intent_type || null,
+                confidence: c.confidence ?? null,
+                memory_scope: c.memory_scope || routingSignals?.memory_scope || null,
+                matched_skills: matchedSkillNames,
+                constraints_extracted: c.constraints_extracted || [],
+            },
+            routing_signals: routingSignals || null,
+            classifier_signals: classifierSignals,
+            memory_context: memory || null,
+            search_results: searchResults || null,
+            skills: {
+                active: activeSkill,
+                matched: matchedSkillNames,
+                stats: skillStats,
+            },
+            agents: {
+                recommendation: hasAgentIdentity(recommendationHint) ? recommendationHint : null,
+                recommendation_meta: recommendationMeta,
+                selected: selectedHint,
+                suggested: selectedHint ? [selectedHint] : [],
+                suggested_count: suggestedAgents.length,
+            },
+            ...(orchResources ? { resources: orchResources } : {}),
+        },
+        required_actions: buildRequiredActions(hardGates),
+    };
+    const requiredActions = buildRequiredActions(hardGates);
+    const prefix = buildPriorityPrefix(c.effort_level, c.intent_type, null, requiredActions);
+    if (turnId) {
+        return prefix + buildFetchInstruction(turnId);
+    }
+    // Legacy inline fallback when no turnId available
+    return prefix + renderContractBlock(envelope);
+}
+export function emitStatus(data, elapsed, lastFailure) {
+    if (!data) {
+        if (lastFailure) {
+            process.stderr.write(`[gramatr] ✗ ${lastFailure.reason} (${elapsed}ms) — ${lastFailure.detail}\n`);
+        }
+        else {
+            process.stderr.write(`[gramatr] ✗ no result (${elapsed}ms)\n`);
+        }
+        return;
+    }
+    const packet1 = data.packet_1 || {};
+    const c = packet1.classification || data.classification || {};
+    const es = packet1.execution_summary || data.execution_summary || {};
+    const st = es.stage_timing || {};
+    const version = es.server_version ? `v${es.server_version}` : "";
+    const classifier = es.classifier_model || "unknown";
+    const confidence = c.confidence ? `${Math.round(c.confidence * 100)}%` : "";
+    process.stderr.write(`[grāmatr${version ? " " + version : ""}] ✓ ${c.effort_level || "?"}/${c.intent_type || "?"} ${confidence} (${classifier}, ${elapsed}ms)\n`);
+    const stages = [];
+    if (st.classifier_ms !== undefined)
+        stages.push(`classify:${st.classifier_ms}ms`);
+    // Backward compat: accept legacy keys from older servers (distilbert_ms, mistral_classify_ms removed in #2652)
+    else if (st.distilbert_ms !== undefined)
+        stages.push(`classify:${st.distilbert_ms}ms`);
+    else if (st.mistral_classify_ms !== undefined)
+        stages.push(`classify:${st.mistral_classify_ms}ms`);
+    if (st.tool_calling_ms !== undefined)
+        stages.push(`memory:${st.tool_calling_ms}ms`);
+    if (st.reverse_engineering_ms !== undefined)
+        stages.push(`RE:${st.reverse_engineering_ms}ms`);
+    if (st.quality_gate_criteria_ms !== undefined)
+        stages.push(`QG:${st.quality_gate_criteria_ms}ms`);
+    if (stages.length > 0) {
+        process.stderr.write(`[gramatr] stages: ${stages.join(" → ")}\n`);
+    }
+}
+//# sourceMappingURL=intelligence.js.map
