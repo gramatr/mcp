@@ -1,0 +1,41 @@
+{
+  "description": "grāmatr hooks. SessionStart establishes the gramatr session via session_bootstrap (cwd-based project resolution + session_start; persists client_session_id↔gramatr_session_id mapping keyed by client_type in Redis with 24h TTL, configurable via BOOTSTRAP_MAPPING_TTL_SECONDS). UserPromptSubmit then rides on that mapping via route_request — the only correlation handle it needs is {client_session_id, client_type}. The architecture is client-agnostic (v0.20.18 #2756) — Claude Code is one consumer; Cursor, Codex, ChatGPT plugins drop in later by passing their own client_session_id with a matching client_type literal. SessionEnd and Stop hooks intentionally absent: classification_feedback and save_handoff require args that cannot be substituted from the client's hook event JSON, so the agent calls them itself from the per-turn directive. See #2740 for server-side adapter-tool follow-up.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "plugin:gramatr:gramatr",
+            "tool": "session_bootstrap",
+            "input": {
+              "cwd": "${cwd}",
+              "client_session_id": "${session_id}",
+              "client_type": "claude-code",
+              "hook_response": true
+            }
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "plugin:gramatr:gramatr",
+            "tool": "route_request",
+            "input": {
+              "prompt": "${prompt}",
+              "client_session_id": "${session_id}",
+              "client_type": "claude-code",
+              "hook_response": true
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
