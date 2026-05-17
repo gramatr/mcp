@@ -1,0 +1,6 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "cat \"${CLAUDE_PROJECT_DIR:-$PWD}/.gramatr/statusline-${CLAUDE_SESSION_ID:-default}.txt\" 2>/dev/null"
+  }
+}
