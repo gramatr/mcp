@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "gramatr": {
+      "type": "http",
+      "url": "https://api.gramatr.com/mcp"
+    }
+  }
+}
