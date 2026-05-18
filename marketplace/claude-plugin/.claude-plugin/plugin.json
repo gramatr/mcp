@@ -1,0 +1,31 @@
+{
+  "name": "gramatr",
+  "display_name": "gramatr",
+  "version": "0.20.30",
+  "description": "Decision routing that makes every prompt cheaper, faster, and aware of what came before.",
+  "tagline": "Patent-pending intelligence layer for every AI tool you use.",
+  "long_description": "grāmatr℠ is a patent-pending intelligent middleware layer that sits between you and every AI model you use. Every prompt runs through a multi-head classification pipeline that pre-routes the request, assembles operating doctrine and quality criteria, and pulls relevant context from past work — so the model skips orientation overhead and starts working immediately. Measurable result: ~2,700 tokens of work the model would otherwise do itself, taken off its plate per request, compounding the longer the session runs. Works across Claude, ChatGPT, Cursor, Codex, Gemini, and VS Code.",
+  "featured_use_cases": [
+    "Resume yesterday's project from any AI tool, on any device",
+    "Save your preferences once — every assistant respects them",
+    "Pre-classified prompts mean faster, cheaper answers",
+    "Quality checks and structured execution baked into every task",
+    "One memory across Claude, ChatGPT, Cursor, Codex, Gemini, and VS Code"
+  ],
+  "owner": {
+    "name": "gramatr",
+    "email": "support@gramatr.com",
+    "url": "https://gramatr.com"
+  },
+  "homepage": "https://gramatr.com",
+  "repository": "https://github.com/gramatr/claude-plugin",
+  "license": "MIT",
+  "keywords": [
+    "intelligence",
+    "memory",
+    "routing",
+    "context",
+    "mcp"
+  ],
+  "hooks_file": "hooks.json"
+}
