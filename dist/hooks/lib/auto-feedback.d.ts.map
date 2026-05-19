@@ -1,0 +1,1 @@
+{"version":3,"file":"auto-feedback.d.ts","sourceRoot":"","sources":["../../../src/hooks/lib/auto-feedback.ts"],"names":[],"mappings":"AAIA,MAAM,WAAW,mBAAmB;IAClC,SAAS,EAAE,MAAM,CAAC;IAClB,aAAa,EAAE,MAAM,CAAC;IACtB,UAAU,CAAC,EAAE,MAAM,CAAC;CACrB;AAED,wBAAgB,gBAAgB,CAAC,OAAO,EAAE,mBAAmB,GAAG,IAAI,CAmCnE"}
