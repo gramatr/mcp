@@ -1,0 +1,74 @@
+{
+  "description": "grāmatr hooks. SessionStart establishes the gramatr session via session_bootstrap (cwd-based project resolution + session_start; persists client_session_id↔gramatr_session_id mapping keyed by client_type in Redis with 24h TTL, configurable via BOOTSTRAP_MAPPING_TTL_SECONDS). UserPromptSubmit then rides on that mapping via route_request — the only correlation handle it needs is {client_session_id, client_type}. Stop is wired (v0.20.22 / PR-Hook-1 of #2768) via record_turn_feedback — an adapter that takes only the client_session_id + stop_reason, looks up the gramatr session, and records an auto classification-feedback signal so every turn contributes training data even when the agent skips its explicit feedback call. The architecture is client-agnostic (v0.20.18 #2756) — Claude Code is one consumer; Cursor, Codex, ChatGPT plugins drop in later by passing their own client_session_id with a matching client_type literal. SessionEnd remains absent pending the auto_save_handoff adapter (PR-Hook-2 of #2768). See #2768 for the full 5-hook queue.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "plugin:gramatr:gramatr",
+            "tool": "session_bootstrap",
+            "input": {
+              "cwd": "${cwd}",
+              "client_session_id": "${session_id}",
+              "client_type": "claude-code",
+              "source": "${source}",
+              "hook_response": true
+            }
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "plugin:gramatr:gramatr",
+            "tool": "route_request",
+            "input": {
+              "prompt": "${prompt}",
+              "client_session_id": "${session_id}",
+              "client_type": "claude-code",
+              "hook_response": true
+            }
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "plugin:gramatr:gramatr",
+            "tool": "record_turn_feedback",
+            "input": {
+              "client_session_id": "${session_id}",
+              "client_type": "claude-code",
+              "stop_reason": "${reason}",
+              "hook_response": true
+            }
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/bin/precompact-block.js"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "gramatr": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/bin/gramatr-proxy.js"
+      ]
+    }
+  }
+}
