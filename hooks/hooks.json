@@ -1,0 +1,69 @@
+{
+  "description": "grāmatr hooks. SessionStart writes git context to .gramatr/git-context.json via local-extras.js (zero-auth, zero-network). UserPromptSubmit routes prompts via route_request on the HTTP gramatr server. Stop records turn feedback via record_turn_feedback. The architecture is client-agnostic (v0.20.18 #2756) — Claude Code is one consumer; Cursor, Codex, ChatGPT plugins drop in later by passing their own client_session_id with a matching client_type literal. SessionEnd remains absent pending the auto_save_handoff adapter (PR-Hook-2 of #2768). See #2768 for the full 5-hook queue.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/bin/local-extras.js"
+            ]
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "plugin:gramatr:gramatr",
+            "tool": "route_request",
+            "input": {
+              "prompt": "${prompt}",
+              "client_session_id": "${session_id}",
+              "client_type": "claude-code",
+              "hook_response": true
+            }
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "plugin:gramatr:gramatr",
+            "tool": "record_turn_feedback",
+            "input": {
+              "client_session_id": "${session_id}",
+              "client_type": "claude-code",
+              "stop_reason": "${reason}",
+              "hook_response": true
+            }
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PLUGIN_ROOT}/bin/precompact-block.js"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
