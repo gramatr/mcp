@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "gramatr": {
+      "type": "http",
+      "url": "https://api.gramatr.com/mcp"
+    },
+    "gramatr-local-extras": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/bin/gramatr-proxy.js"
+      ]
+    }
+  }
+}
