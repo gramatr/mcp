@@ -1,0 +1,19 @@
+{
+  "name": "gramatr",
+  "description": "Real-time intelligent context engineering that makes every prompt cheaper, faster, and context-aware.",
+  "owner": {
+    "name": "gramatr",
+    "email": "support@gramatr.com",
+    "url": "https://gramatr.com"
+  },
+  "plugins": [
+    {
+      "name": "gramatr",
+      "source": {
+        "source": "github",
+        "repo": "gramatr/claude-plugin",
+        "ref": "release"
+      }
+    }
+  ]
+}
